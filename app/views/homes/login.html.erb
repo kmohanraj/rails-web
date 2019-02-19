@@ -1,0 +1,129 @@
+<div class="container">
+    <div class="login_forms">
+        <div id="login-form">
+            <form class="login">
+			<h1>Login Here!</h1>
+
+            <input type="email" id="email" placeholder="email" required="true" class="form-control" /><br>
+            <input type="password" id="password" placeholder="password" required="true" class="form-control" />
+            <input type="submit"  id="btn_id" value="Sign In" class="login-btn" />
+            </form>
+        </div>
+    </div>
+    <div class="user_details hide user-table">
+    	<table class="table table-striped">
+    		<h2>Users</h2>
+
+    		<thead>
+				<tr>
+					<th>ID</th>
+					<th>Name</th>
+				</tr>
+			</thead>
+    	</table>
+
+    	<h2>User Detail</h2>
+    	<div class="display_detail" style="margin-top: 30px;">
+    		
+    	</div>
+    </div>
+</div>
+
+
+
+
+
+<script type="text/javascript">
+var token;
+// post login user
+$(function(){
+  $(".login").submit(function(event){
+    event.preventDefault();
+    var email = $("#email").val();
+    var password = $("#password").val();
+    $.ajax({
+      type: "POST",
+      url: "http://localhost:3000/auth/login",
+	  dataType:'json',
+      data: {email: email, password: password},
+      success: function (data){
+        token = data.token;
+        get_user_details(token);
+      },
+      error: function(error){
+      	alert("email or password error.");
+      }
+  	});
+  });
+  //get all users 
+  function get_user_details(token){
+  	$.ajax({
+  	  type: "GET",
+      url: "http://localhost:3000/users",
+	  dataType:'json',
+	  beforeSend: function(xhr){
+	  	xhr.setRequestHeader("Authorization", token);
+	  },
+      success: function (data){
+        display_user_details(data);
+      },
+      error: function(error){
+      	alert("email or password error");
+      } 
+  	})
+  }
+
+  // display all users
+  function display_user_details(data){
+  	var table_dom = "";
+  	for (var i = 0; i < data.length; i++) {
+  		table_dom += "<tr class='data_row'><td class='id_val'>" + data[i].id + "</td><td><a class='name_val'>"+data[i].name+"</a></td></tr>";
+  	}
+  	$(".user_details table").append(table_dom);
+  	$(".user_details").removeClass("hide");
+  	$(".login_forms").html("");
+  }
+
+  $(".user_details").on("click", ".name_val", function(e){
+  	var id = $(this).closest(".data_row").find(".id_val");
+  	get_user_details_by_id(id.html());
+  });
+  
+  //get user by id
+  function get_user_details_by_id(id){
+  	$.ajax({
+  	  type: "GET",
+      url: "http://localhost:3000/users/"+id,
+	  dataType:'json',
+	  beforeSend: function(xhr){
+	  	xhr.setRequestHeader("Authorization", token);
+	  },
+      success: function (data){
+        display_user_details_by_id(data);
+      },
+      error: function(error){
+      	alert("email or password error");
+      } 
+  	})
+  }
+
+  //display user by id
+  function display_user_details_by_id(data){
+  var user = "<ol><li>"+data.name+"</li><li>"+data.username+"</li><li>"+data.email+"</li></ol>";
+  $(".display_detail").html(user);
+  }
+
+});
+
+</script>
+
+
+
+
+
+
+
+
+
+
+
